@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="SEC ASSEM — Professional Cybersecurity Penetration Testing Toolkit. Comprehensive suite of security tools for pentesters and security researchers.">
+    <meta name="keywords" content="cybersecurity, pentesting, security tools, vulnerability assessment, SEC ASSEM">
+    <title>SEC ASSEM — Cybersecurity Toolkit</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
+
+    <!-- Modal Overlay -->
+    <div id="modal-overlay" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title"></h3>
+                <button class="modal-close" onclick="SecAssem.closeModal()">&times;</button>
+            </div>
+            <div id="modal-body" class="modal-body"></div>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="sidebar">
+        <div class="sidebar-header">
+            <img src="logo.jpg" alt="SEC ASSEM Logo" class="sidebar-logo" id="sidebar-logo">
+            <div class="sidebar-brand">
+                <h1>SEC ASSEM</h1>
+                <span class="sidebar-tagline">Cybersecurity Toolkit</span>
+            </div>
+        </div>
+
+        <div class="search-box">
+            <span class="search-icon">⌕</span>
+            <input type="text" id="tool-search" placeholder="Search tools..." autocomplete="off">
+        </div>
+
+        <nav class="sidebar-nav" id="sidebar-nav">
+            <!-- Network Recon -->
+            <div class="nav-category" data-category="network">
+                <div class="nav-category-header">
+                    <span class="nav-icon">🌐</span>
+                    <span class="nav-label">Network Recon</span>
+                    <span class="nav-arrow">›</span>
+                </div>
+                <div class="nav-items">
+                    <a class="nav-item" data-tool="whois-lookup">WHOIS Lookup</a>
+                    <a class="nav-item" data-tool="dns-lookup">DNS Lookup</a>
+                    <a class="nav-item" data-tool="ip-geo">IP Geolocation</a>
+                    <a class="nav-item" data-tool="reverse-dns">Reverse DNS</a>
+                    <a class="nav-item" data-tool="header-analyzer">Header Analyzer</a>
+                    <a class="nav-item" data-tool="subdomain-finder">Subdomain Finder</a>
+                    <a class="nav-item" data-tool="port-scanner">Port Reference</a>
+                </div>
+            </div>
+
+            <!-- Web Security -->
+            <div class="nav-category" data-category="websec">
+                <div class="nav-category-header">
+                    <span class="nav-icon">🛡️</span>
+                    <span class="nav-label">Web Security</span>
+                    <span class="nav-arrow">›</span>
+                </div>
+                <div class="nav-items">
+                    <a class="nav-item" data-tool="xss-generator">XSS Payloads</a>
+                    <a class="nav-item" data-tool="sqli-generator">SQLi Payloads</a>
+                    <a class="nav-item" data-tool="lfi-generator">LFI/RFI Payloads</a>
+                    <a class="nav-item" data-tool="csrf-generator">CSRF PoC Builder</a>
+                    <a class="nav-item" data-tool="redirect-generator">Open Redirect</a>
+                    <a class="nav-item" data-tool="ssrf-generator">SSRF Payloads</a>
+                </div>
+            </div>
+
+            <!-- Crypto & Encoding -->
+            <div class="nav-category" data-category="crypto">
+                <div class="nav-category-header">
+                    <span class="nav-icon">🔐</span>
+                    <span class="nav-label">Crypto & Encoding</span>
+                    <span class="nav-arrow">›</span>
+                </div>
+                <div class="nav-items">
+                    <a class="nav-item" data-tool="hash-generator">Hash Generator</a>
+                    <a class="nav-item" data-tool="encoder-decoder">Encoder/Decoder</a>
+                    <a class="nav-item" data-tool="jwt-decoder">JWT Decoder</a>
+                    <a class="nav-item" data-tool="hash-identifier">Hash Identifier</a>
+                </div>
+            </div>
+
+            <!-- Password Tools -->
+            <div class="nav-category" data-category="password">
+                <div class="nav-category-header">
+                    <span class="nav-icon">🔑</span>
+                    <span class="nav-label">Password Tools</span>
+                    <span class="nav-arrow">›</span>
+                </div>
+                <div class="nav-items">
+                    <a class="nav-item" data-tool="password-generator">Password Generator</a>
+                    <a class="nav-item" data-tool="password-analyzer">Strength Analyzer</a>
+                </div>
+            </div>
+
+            <!-- OSINT -->
+            <div class="nav-category" data-category="osint">
+                <div class="nav-category-header">
+                    <span class="nav-icon">🔍</span>
+                    <span class="nav-label">OSINT</span>
+                    <span class="nav-arrow">›</span>
+                </div>
+                <div class="nav-items">
+                    <a class="nav-item" data-tool="dork-generator">Google Dorks</a>
+                    <a class="nav-item" data-tool="email-validator">Email Validator</a>
+                    <a class="nav-item" data-tool="tech-lookup">Tech Lookup</a>
+                </div>
+            </div>
+
+            <!-- Report Generator -->
+            <div class="nav-category" data-category="report">
+                <div class="nav-category-header">
+                    <span class="nav-icon">📋</span>
+                    <span class="nav-label">Report Generator</span>
+                    <span class="nav-arrow">›</span>
+                </div>
+                <div class="nav-items">
+                    <a class="nav-item" data-tool="report-generator">Pentest Report</a>
+                </div>
+            </div>
+
+            <!-- Utility Tools -->
+            <div class="nav-category" data-category="utility">
+                <div class="nav-category-header">
+                    <span class="nav-icon">⚙️</span>
+                    <span class="nav-label">Utility Tools</span>
+                    <span class="nav-arrow">›</span>
+                </div>
+                <div class="nav-items">
+                    <a class="nav-item" data-tool="revshell-generator">Reverse Shell</a>
+                    <a class="nav-item" data-tool="wordlist-generator">Wordlist Generator</a>
+                    <a class="nav-item" data-tool="regex-tester">Regex Tester</a>
+                    <a class="nav-item" data-tool="timestamp-converter">Timestamp Converter</a>
+                </div>
+            </div>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="sidebar-version">v1.0.0 — by Assem</div>
+        </div>
+    </aside>
+
+    <!-- Mobile Hamburger -->
+    <button class="hamburger-menu" id="hamburger-btn" onclick="SecAssem.toggleSidebar()">
+        <span></span><span></span><span></span>
+    </button>
+
+    <!-- Main Content -->
+    <main id="main-content" class="main-content">
+
+        <!-- Header Bar -->
+        <header class="header-bar">
+            <div class="breadcrumb" id="breadcrumb">
+                <span class="breadcrumb-home" onclick="SecAssem.showWelcome()">⌂ Home</span>
+                <span class="breadcrumb-sep" id="breadcrumb-sep" style="display:none"> / </span>
+                <span class="breadcrumb-current" id="breadcrumb-current"></span>
+            </div>
+            <div class="header-right">
+                <div class="header-status">
+                    <span class="status-dot status-online"></span>
+                    <span>Operational</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Welcome Screen -->
+        <div id="welcome-screen" class="welcome-screen">
+            <div class="welcome-hero">
+                <img src="logo.jpg" alt="SEC ASSEM" class="welcome-logo">
+                <h2 class="welcome-title">SEC ASSEM</h2>
+                <p class="welcome-subtitle">Professional Cybersecurity Penetration Testing Toolkit</p>
+                <div class="typing-container">
+                    <span class="typing-text" id="typing-text"></span>
+                    <span class="typing-cursor">|</span>
+                </div>
+            </div>
+            <div class="stat-cards">
+                <div class="stat-card">
+                    <div class="stat-number">25+</div>
+                    <div class="stat-label">Security Tools</div>
+                    <div class="stat-icon">🛠️</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">7</div>
+                    <div class="stat-label">Categories</div>
+                    <div class="stat-icon">📂</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">∞</div>
+                    <div class="stat-label">Payloads</div>
+                    <div class="stat-icon">⚡</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">PDF</div>
+                    <div class="stat-label">Reports</div>
+                    <div class="stat-icon">📋</div>
+                </div>
+            </div>
+            <div class="welcome-quick-tools">
+                <h3>Quick Access</h3>
+                <div class="quick-tools-grid">
+                    <button class="quick-tool-btn" onclick="SecAssem.navigateTo('subdomain-finder')">🌐 Subdomain Finder</button>
+                    <button class="quick-tool-btn" onclick="SecAssem.navigateTo('xss-generator')">🛡️ XSS Payloads</button>
+                    <button class="quick-tool-btn" onclick="SecAssem.navigateTo('hash-generator')">🔐 Hash Generator</button>
+                    <button class="quick-tool-btn" onclick="SecAssem.navigateTo('revshell-generator')">⚙️ Reverse Shell</button>
+                    <button class="quick-tool-btn" onclick="SecAssem.navigateTo('dork-generator')">🔍 Google Dorks</button>
+                    <button class="quick-tool-btn" onclick="SecAssem.navigateTo('report-generator')">📋 Report Generator</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- TOOL PANELS -->
+        <!-- ============================================== -->
+
+        <!-- WHOIS Lookup -->
+        <div id="whois-lookup" class="tool-panel" data-title="WHOIS Lookup" data-category="Network Recon">
+            <div class="tool-header">
+                <h2>WHOIS Lookup</h2>
+                <p class="tool-desc">Retrieve domain registration and ownership information.</p>
+            </div>
+            <div class="tool-body">
+                <div class="input-group">
+                    <label for="whois-lookup-domain">Domain or IP Address</label>
+                    <input type="text" id="whois-lookup-domain" placeholder="example.com">
+                </div>
+                <button class="btn-primary" id="whois-lookup-btn" onclick="SecAssem.tools.whoisLookup()">
+                    <span class="btn-icon">🔎</span> Lookup
+                </button>
+                <div id="whois-lookup-results" class="result-block"></div>
+            </div>
+        </div>
+
+        <!-- DNS Lookup -->
+        <div id="dns-lookup" class="tool-panel" data-title="DNS Lookup" data-category="Network Recon">
+            <div class="tool-header">
+                <h2>DNS Lookup</h2>
+                <p class="tool-desc">Query DNS records for any domain name.</p>
+            </div>
+            <div class="tool-body">
+                <div class="input-row">
+                    <div class="input-group" style="flex:2">
+                        <label for="dns-lookup-domain">Domain Name</label>
+                        <input type="text" id="dns-lookup-domain" placeholder="example.com">
+                    </div>
+                    <div class="input-group" style="flex:1">
+                        <label for="dns-lookup-type">Record Type</label>
+                        <select id="dns-lookup-type">
+                            <option value="A">A</option>
+                            <option value="AAAA">AAAA</option>
+                            <option value="MX">MX</option>
+                            <option value="NS">NS</option>
+                            <option value="TXT">TXT</option>
+                            <option value="CNAME">CNAME</option>
+                            <option value="SOA">SOA</option>
+                            <option value="ANY">ANY</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="btn-primary" id="dns-lookup-btn" onclick="SecAssem.tools.dnsLookup()">
+                    <span class="btn-icon">🔎</span> Query DNS
+                </button>
+                <div id="dns-lookup-results" class="result-block"></div>
+            </div>
+        </div>
+
+        <!-- IP Geolocation -->
+        <div id="ip-geo" class="tool-panel" data-title="IP Geolocation" data-category="Network Recon">
+            <div class="tool-header">
+                <h2>IP Geolocation</h2>
+                <p class="tool-desc">Locate geographic information for an IP address.</p>
+            </div>
+            <div class="tool-body">
+                <div class="input-group">
+                    <label for="ip-geo-ip">IP Address</label>
+                    <input type="text" id="ip-geo-ip" placeholder="8.8.8.8">
+                </div>
+                <button class="btn-primary" id="ip-geo-btn" onclick="SecAssem.tools.ipGeo()">
+                    <span class="btn-icon">📍</span> Locate
+                </button>
+                <div id="ip-geo-results" class="result-block"></div>
+            </div>
+        </div>
+
+        <!-- Reverse DNS -->
+        <div id="reverse-dns" class="tool-panel" data-title="Reverse DNS" data-category="Network Recon">
+            <div class="tool-header">
+                <h2>Reverse DNS</h2>
+                <p class="tool-desc">Find the hostname associated with an IP address.</p>
+            </div>
+            <div class="tool-body">
+                <div class="input-group">
+                    <label for="reverse-dns-ip">IP Address</label>
+                    <input type="text" id="reverse-dns-ip" placeholder="8.8.8.8">
+                </div>
+                <button class="btn-primary" id="reverse-dns-btn" onclick="SecAssem.tools.reverseDns()">
+                    <span class="btn-icon">🔄</span> Reverse Lookup
+                </button>
+                <div id="reverse-dns-results" class="result-block"></div>
+            </div>
+        </div>
+
+        <!-- HTTP Header Analyzer -->
+        <div id="header-analyzer" class="tool-panel" data-title="HTTP Header Analyzer" data-category="Network Recon">
+            <div class="tool-header">
+                <h2>HTTP Header Analyzer</h2>
+                <p class="tool-desc">Analyze HTTP response headers and evaluate security posture.</p>
+            </div>
+            <div class="tool-body">
+                <div class="input-group">
+                    <label for="header-analyzer-url">Target URL</label>
+                    <input type="text" id="header-analyzer-url" placeholder="https://example.com">
+                </div>
+                <button class="btn-primary" id="header-analyzer-btn" onclick="SecAssem.tools.headerAnalyzer()">
+                    <span class="btn-icon">📡</span> Analyze Headers
+                </button>
+                <div id="header-analyzer-results" class="result-block"></div>
+            </div>
+        </div>
+
+        <!-- Subdomain Finder -->
+        <div id="subdomain-finder" class="tool-panel" data-title="Subdomain Finder" data-category="Network Recon">
+            <div class="tool-header">
+                <h2>Subdomain Finder</h2>
+                <p class="tool-desc">Enumerate subdomains using Certificate Transparency logs.</p>
+            </div>
+            <div class="tool-body">
+                <div class="input-group">
+                    <label for="subdomain-finder-domain">Target Domain</label>
+                    <input type="text" id="subdomain-finder-domain" placeholder="example.com">
+                </div>
+                <button class="btn-primary" id="subdomain-finder-btn" onclick="SecAssem.tools.subdomainFinder()">
+                    <span class="btn-icon">🌐</span> Find Subdomains
+                </button>
+                <div id="subdomain-finder-results" class="result-block"></div>
+            </div>
+        </div>
+
+        <!-- Port Scanner Reference -->
+        <div id="port-scanner" class="tool-panel" data-title="Port Scanner Reference" data-category="Network Recon">
+            <div class="tool-header">
+                <h2>Port Scanner Reference & Nmap Generator</h2>
+                <p class="tool-desc">Common ports reference guide and Nmap command builder.</p>
+            </div>
+            <div class="tool-body">
+                <div class="input-row">
+                    <div class="input-group" style="flex:1">
+                        <label for="port-scanner-search">Filter Ports</label>
+                        <input type="text" id="port-scanner-search" placeholder="Search port, service, or protocol...">
+                    </div>
+                    <div class="input-group" style="flex:1">
+                        <label for="port-scanner-target">Nmap Target</label>
+                        <input type="text" id="port-scanner-target" placeholder="192.168.1.0/24">
+                    </div>
+                </div>
+                <div class="btn-row">
+                    <button class="btn-primary" id="port-scanner-btn" onclick="SecAssem.tools.portScanner()">
+                        <span class="btn-icon">📋</span> Show Ports
+                    </button>
+                    <button class="btn-secondary" onclick="SecAssem.tools.generateNmap()">
+                        <span class="btn-icon">⚙️</span> Generate Nmap Command
+                    </button>
+                </div>
+                <div id="port-scanner-nmap" class="result-block" style="margin-bottom:12px"></div>
+                <div id="port-scanner-results" class="result-block"></div>
+            </div>
+        </div>
+
+        <!-- XSS Payload Generator -->
+        <div id="xss-generator" class="tool-panel" data-title="XSS Payload Generator" data-category="Web Security">
+            <div class="tool-header">
+                <h2>XSS Payload Generator</h2>
+                <p class="tool-desc">Generate Cross-Site Scripting payloads for various injection contexts.</p>
+            </div>
+            <div class="tool-body">
+                <div class="input-row">
+                    <div class="input-group" style="flex:1">
+                        <label for="xss-generator-context">Injection Context</label>
+                        <select id="xss-generator-context">
+                            <option value="html">HTML Body</option>
+                            <option value="attribute">HTML Attribute</option>
+                            <option value="javascript">JavaScript</option>
+                            <option value="url">URL Parameter</option>
+                            <option value="event">Event Handler</option>
+                        </select>
+                    </div>
+                    <div class="input-group" style="flex:1">
+                        <label for="xss-generator-encoding">Encoding</label>
+                        <select id="xss-generator-encoding">
+                            <option value="none">None</option>
+                            <option value="url">URL Encode</option>
+                            <option value="html">HTML Entities</option>
+                            <option value="base64">Base64</option>
+                            <option value="double-url">Double URL</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="btn-primary" id="xss-generator-btn" onclick="SecAssem.tools.xssGenerator()">
+                    <span class="btn-icon">⚡</span> Generate Payloads
+                </button>
+                <div id="xss-generator-results" class="result-block"></div>
+            </div>
+        </div>
+
+        <!-- SQL Injection Payloads -->
+        <div id="sqli-generator" class="tool-panel" data-title="SQLi Payload Generator" data-category="Web Security">
+            <div class="tool-header">
+                <h2>SQL Injection Payload Generator</h2>
+                <p class="tool-desc">Generate SQL Injection payloads for various database engines and techniques.</p>
+            </div>
+            <div class="tool-body">
+                <div class="input-row">
+                    <div class="input-group" style="flex:1">
+                        <label for="sqli-generator-db">Database Type</label>
+                        <select id="sqli-generator-db">
+                            <option value="mysql">MySQL</option>
+                            <option value="postgresql">PostgreSQL</option>
+                            <option value="mssql">MSSQL</option>
+                            <option value="oracle">Oracle</option>
+                            <option value="sqlite">SQLite</option>
+                            <option value="generic">Generic</option>
+                        </select>
+                    </div>
+                    <div class="input-group" style="flex:1">
+                        <label for="sqli-generator-technique">Technique</label>
+                        <select id="sqli-generator-technique">
+                            <option value="union">Union Based</option>
+                            <option value="error">Error Based</option>
+                            <option value="blind-boolean">Blind Boolean</option>
+                            <option value="blind-time">Blind Time</option>
+                            <option value="stacked">Stacked Queries</option>
+                            <option value="auth-bypass">Auth Bypass</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="btn-primary" id="sqli-generator-btn" onclick="SecAssem.tools.sqliGenerator()">
+                    <span class="btn-icon">⚡</span> Generate Payloads
+                </button>
+                <div id="sqli-generator-results" class="result-block"></div>
+            </div>
+        </div>
+
+        <!-- LFI/RFI Payloads -->
+        <div id="lfi-generator" class="tool-panel" data-title="LFI/RFI Payloads" data-category="Web Security">
+            <div class="tool-header">
+                <h2>LFI/RFI Payload Generator</h2>
+                <p class="tool-desc">Generate Local/Remote File Inclusion payloads for exploitation.</p>
+            </div>
+            <div class="tool-body">
+                <div class="input-row">
+                    <div class="input-group" style="flex:1">
+                        <label for="lfi-generator-os">Target OS</label>
+                        <select id="lfi-generator-os">
+                            <option value="linux">Linux</option>
+                            <option value="windows">Windows</option>
+                        </select>
+                    </div>
+                    <div class="input-group" style="flex:1">
+                        <label for="lfi-generator-technique">Technique</label>
+                        <select id="lfi-generator-technique">
+                            <option value="basic">Basic Traversal</option>
+                            <option value="null-byte">Null Byte</option>
+                            <option value="double-encoding">Double Encoding</option>
+                            <option value="filter-bypass">Filter Bypass</option>
+                            <option value="php-wrappers">PHP Wrappers</option>
+                            <option value="log-poisoning">Log Poisoning</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="btn-primary" id="lfi-generator-btn" onclick="SecAssem.tools.lfiGenerator()">
+                    <span class="btn-icon">⚡</span> Generate Payloads
+                </button>
+                <div id="lfi-generator-results" class="result-block"></div>
+            </div>
+        </div>
+
+        <!-- CSRF PoC Generator -->
+        <div id="csrf-generator" class="tool-panel" data-title="CSRF PoC Builder" data-category="Web Security">
+            <div class="tool-header">
+                <h2>CSRF PoC Generator</h2>
+                <p class="tool-desc">Generate Cross-Site Request Forgery proof-of-concept HTML pages.</p>
+            </div>
+            <div class="tool-body">
+                <div class="input-row">
+                    <div class="input-group" style="flex:2">
+                        <label for="csrf-generator-url">Target URL</label>
+                        <input type="text" id="csrf-generator-url" placeholder="https://target.com/api/action">
+                    </div>
+                    <div class="input-group" style="flex:1">
+                        <label for="csrf-generator-method">HTTP Method</label>
+                        <select id="csrf-generator-method">
+                            <option value="POST">POST</option>
+                            <option value="GET">GET</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="input-row">
+                    <div class="input-group" style="flex:1">
+                        <label for="csrf-generator-names">Parameter Names (one per line)</label>
+                        <textarea id="csrf-generator-names" rows="4" placeholder="username&#10;email&#10;role"></textarea>
+                    </div>
+                    <div class="input-group" style="flex:1">
+                        <label for="csrf-generator-values">Parameter Values (one per line)</label>
+                        <textarea id="csrf-generator-values" rows="4" placeholder="admin&#10;admin@evil.com&#10;administrator"></textarea>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="csrf-generator-autosubmit" checked> Auto-submit on page load
+                    </label>
+                </div>
+                <button class="btn-primary" id="csrf-generator-btn" onclick="SecAssem.tools.csrfGenerator()">
+                    <span class="btn-icon">⚡</span> Generate PoC
+                </button>
+                <div id="csrf-generator-results" class="result-block"></div>
+            </div>
+        </div>
+
+        <!-- Open Redirect Payloads -->
+        <div id="redirect-generator" class="tool-panel" data-title="Open Redirect Payloads" data-category="Web Security">
+            <div class="tool-header">
+                <h2>Open Redirect Payload Generator</h2>
+                <p class="tool-desc">Generate URL redirect bypass payloads for various techniques.</p>
+            </div>
+            <div class="tool-body">
+                <div class="input-group">
+                    <label for="redirect-generator-url">Evil Redirect URL</label>
+                    <input type="text" id="redirect-generator-url" placeholder="https://evil.com">
+                </div>
+                <button class="btn-primary" id="redirect-generator-btn" onclick="SecAssem.tools.redirectGenerator()">
+                    <span class="btn-icon">⚡</span> Generate Payloads
+                </button>
+                <div id="redirect-generator-results" class="result-block"></div>
+            </div>
+        </div>
+
+        <!-- SSRF Payloads -->
+        <div id="ssrf-generator" class="tool-panel" data-title="SSRF Payloads" data-category="Web Security">
+            <div class="tool-header">
+                <h2>SSRF Payload Generator</h2>
+                <p class="tool-desc">Generate Server-Side Request Forgery payloads with bypass techniques.</p>
+            </div>
+            <div class="tool-body">
+                <div class="input-row">
+                    <div class="input-group" style="flex:2">
+                        <label for="ssrf-generator-ip">Target Internal IP/Host</label>
+                        <input type="text" id="ssrf-generator-ip" placeholder="127.0.0.1" value="127.0.0.1">
+                    </div>
+                    <div class="input-group" style="flex:1">
+                        <label for="ssrf-generator-port">Port</label>
+                        <input type="text" id="ssrf-generator-port" placeholder="80" value="80">
+                    </div>
+                </div>
+                <button class="btn-primary" id="ssrf-generator-btn" onclick="SecAssem.tools.ssrfGenerator()">
+                    <span class="btn-icon">⚡</span> Generate Payloads
+                </button>
+                <div id="ssrf-generator-results" class="result-block"></div>
+            </div>
+        </div>
+
+        <!-- Hash Generator -->
+        <div id="hash-generator" class="tool-panel" data-title="Hash Generator" data-category="Crypto & Encoding">
+            <div class="tool-header">
+                <h2>Hash Generator</h2>
+                <p class="tool-desc">Generate cryptographic hashes using multiple algorithms simultaneously.</p>
+            </div>
+            <div class="tool-body">
+                <div class="input-group">
+                    <label for="hash-generator-text">Text to Hash</label>
+                    <textarea id="hash-generator-text" rows="3" placeholder="Enter text to hash..."></textarea>
+                </div>
+                <button class="btn-primary" id="hash-generator-btn" onclick="SecAssem.tools.hashGenerator()">
+                    <span class="btn-icon">🔐</span> Generate Hashes
+                </button>
+                <div id="hash-generator-results" class="result-block"></div>
+            </div>
+        </div>
+
+        <!-- Encoder/Decoder -->
+        <div id="encoder-decoder" class="tool-panel" data-title="Encoder / Decoder" data-category="Crypto & Encoding">
+            <div class="tool-header">
+                <h2>Encoder / Decoder</h2>
+                <p class="tool-desc">Encode and decode text using various encoding schemes.</p>
+            </div>
+            <div class="tool-body">
+                <div class="tab-nav">
+                    <button class="tab-btn active" data-tab="encode" onclick="SecAssem.switchTab(this, 'encoder-decoder')">Encode</button>
+                    <button class="tab-btn" data-tab="decode" onclick="SecAssem.switchTab(this, 'encoder-decoder')">Decode</button>
+                </div>
+                <div class="input-group">
+                    <label for="encoder-decoder-input">Input Text</label>
+                    <textarea id="encoder-decoder-input" rows="3" placeholder="Enter text..."></textarea>
+                </div>
+                <div class="input-group">
+                    <label for="encoder-decoder-type">Encoding Type</label>
+                    <select id="encoder-decoder-type">
+                        <option value="base64">Base64</option>
+                        <option value="url">URL Encoding</option>
+                        <option value="html">HTML Entities</option>
+                        <option value="hex">Hex</option>
+                        <option value="binary">Binary</option>
+                        <option value="rot13">ROT13</option>
+                        <option value="unicode">Unicode Escape</option>
+                    </select>
+                </div>
+                <button class="btn-primary" id="encoder-decoder-btn" onclick="SecAssem.tools.encoderDecoder()">
+                    <span class="btn-icon">🔄</span> Process
+                </button>
+                <div id="encoder-decoder-results" class="result-block"></div>
+            </div>
+        </div>
+
+        <!-- JWT Decoder -->
+        <div id="jwt-decoder" class="tool-panel" data-title="JWT Decoder" data-category="Crypto & Encoding">
+            <div class="tool-header">
+                <h2>JWT Decoder</h2>
+                <p class="tool-desc">Decode and inspect JSON Web Tokens (header, payload, signature).</p>
+            </div>
+            <div class="tool-body">
+                <div class="input-group">
+                    <label for="jwt-decoder-token">JWT Token</label>
+                    <textarea id="jwt-decoder-token" rows="4" placeholder="eyJhbGciOiJIUzI1NiIs..."></textarea>
+                </div>
+                <button class="btn-primary" id="jwt-decoder-btn" onclick="SecAssem.tools.jwtDecoder()">
+                    <span class="btn-icon">🔓</span> Decode JWT
+                </button>
+                <div id="jwt-decoder-results" class="result-block"></div>
+            </div>
+        </div>
+
+        <!-- Hash Identifier -->
+        <div id="hash-identifier" class="tool-panel" data-title="Hash Identifier" data-category="Crypto & Encoding">
+            <div class="tool-header">
+                <h2>Hash Identifier</h2>
+                <p class="tool-desc">Identify hash types and get corresponding hashcat/john modes.</p>
+            </div>
+            <div class="tool-body">
+                <div class="input-group">
+                    <label for="hash-identifier-hash">Hash Value</label>
+                    <input type="text" id="hash-identifier-hash" placeholder="5d41402abc4b2a76b9719d911017c592">
+                </div>
+                <button class="btn-primary" id="hash-identifier-btn" onclick="SecAssem.tools.hashIdentifier()">
+                    <span class="btn-icon">🔍</span> Identify Hash
+                </button>
+                <div id="hash-identifier-results" class="result-block"></div>
+            </div>
+        </div>
+
+        <!-- Password Generator -->
+        <div id="password-generator" class="tool-panel" data-title="Password Generator" data-category="Password Tools">
+            <div class="tool-header">
+                <h2>Secure Password Generator</h2>
+                <p class="tool-desc">Generate cryptographically secure random passwords.</p>
+            </div>
+            <div class="tool-body">
+                <div class="input-group">
+                    <label for="password-generator-length">Length: <span id="password-generator-length-val">16</span></label>
+                    <input type="range" id="password-generator-length" min="8" max="128" value="16" oninput="document.getElementById('password-generator-length-val').textContent=this.value">
+                </div>
+                <div class="checkbox-row">
+                    <label class="checkbox-label"><input type="checkbox" id="password-generator-upper" checked> Uppercase (A-Z)</label>
+                    <label class="checkbox-label"><input type="checkbox" id="password-generator-lower" checked> Lowercase (a-z)</label>
+                    <label class="checkbox-label"><input type="checkbox" id="password-generator-numbers" checked> Numbers (0-9)</label>
+                    <label class="checkbox-label"><input type="checkbox" id="password-generator-symbols" checked> Symbols (!@#$)</label>
+                    <label class="checkbox-label"><input type="checkbox" id="password-generator-exclude"> Exclude Ambiguous</label>
+                </div>
+                <div class="input-group">
+                    <label for="password-generator-qty">Quantity</label>
+                    <input type="number" id="password-generator-qty" min="1" max="50" value="5">
+                </div>
+                <button class="btn-primary" id="password-generator-btn" onclick="SecAssem.tools.passwordGenerator()">
+                    <span class="btn-icon">🔑</span> Generate Passwords
+                </button>
+                <div id="password-generator-results" class="result-block"></div>
+            </div>
+        </div>
+
+        <!-- Password Strength Analyzer -->
+        <div id="password-analyzer" class="tool-panel" data-title="Password Strength Analyzer" data-category="Password Tools">
+            <div class="tool-header">
+                <h2>Password Strength Analyzer</h2>
+                <p class="tool-desc">Evaluate password strength with entropy calculation and crack time estimation.</p>
+            </div>
+            <div class="tool-body">
+                <div class="input-group">
+                    <label for="password-analyzer-pass">Password</label>
+                    <div class="password-input-wrapper">
+                        <input type="password" id="password-analyzer-pass" placeholder="Enter password to analyze...">
+                        <button class="toggle-password" onclick="SecAssem.togglePassword('password-analyzer-pass', this)">👁️</button>
+                    </div>
+                </div>
+                <button class="btn-primary" id="password-analyzer-btn" onclick="SecAssem.tools.passwordAnalyzer()">
+                    <span class="btn-icon">🔍</span> Analyze Strength
+                </button>
+                <div id="password-analyzer-results" class="result-block"></div>
+            </div>
+        </div>
+
+        <!-- Google Dork Generator -->
+        <div id="dork-generator" class="tool-panel" data-title="Google Dork Generator" data-category="OSINT">
+            <div class="tool-header">
+                <h2>Google Dork Generator</h2>
+                <p class="tool-desc">Generate advanced Google search queries for reconnaissance.</p>
+            </div>
+            <div class="tool-body">
+                <div class="input-row">
+                    <div class="input-group" style="flex:1">
+                        <label for="dork-generator-domain">Target Domain</label>
+                        <input type="text" id="dork-generator-domain" placeholder="example.com">
+                    </div>
+                    <div class="input-group" style="flex:1">
+                        <label for="dork-generator-category">Category</label>
+                        <select id="dork-generator-category">
+                            <option value="sensitive">Sensitive Files</option>
+                            <option value="login">Login Pages</option>
+                            <option value="directories">Exposed Directories</option>
+                            <option value="database">Database Files</option>
+                            <option value="config">Config Files</option>
+                            <option value="errors">Error Messages</option>
+                            <option value="vulnerable">Vulnerable Servers</option>
+                            <option value="wordpress">WordPress</option>
+                            <option value="api-keys">API Keys & Tokens</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label for="dork-generator-keyword">Custom Keyword (optional)</label>
+                    <input type="text" id="dork-generator-keyword" placeholder="password">
+                </div>
+                <button class="btn-primary" id="dork-generator-btn" onclick="SecAssem.tools.dorkGenerator()">
+                    <span class="btn-icon">🔍</span> Generate Dorks
+                </button>
+                <div id="dork-generator-results" class="result-block"></div>
+            </div>
+        </div>
+
+        <!-- Email Validator -->
+        <div id="email-validator" class="tool-panel" data-title="Email Validator" data-category="OSINT">
+            <div class="tool-header">
+                <h2>Email Validator</h2>
+                <p class="tool-desc">Validate email format and check domain MX records.</p>
+            </div>
+            <div class="tool-body">
+                <div class="input-group">
+                    <label for="email-validator-email">Email Address</label>
+                    <input type="text" id="email-validator-email" placeholder="user@example.com">
+                </div>
+                <button class="btn-primary" id="email-validator-btn" onclick="SecAssem.tools.emailValidator()">
+                    <span class="btn-icon">📧</span> Validate Email
+                </button>
+                <div id="email-validator-results" class="result-block"></div>
+            </div>
+        </div>
+
+        <!-- Technology Lookup -->
+        <div id="tech-lookup" class="tool-panel" data-title="Technology Lookup" data-category="OSINT">
+            <div class="tool-header">
+                <h2>Technology Lookup</h2>
+                <p class="tool-desc">Detect web technologies, frameworks, and CMS used by a website.</p>
+            </div>
+            <div class="tool-body">
+                <div class="input-group">
+                    <label for="tech-lookup-url">Website URL</label>
+                    <input type="text" id="tech-lookup-url" placeholder="https://example.com">
+                </div>
+                <button class="btn-primary" id="tech-lookup-btn" onclick="SecAssem.tools.techLookup()">
+                    <span class="btn-icon">🔎</span> Detect Technologies
+                </button>
+                <div id="tech-lookup-results" class="result-block"></div>
+            </div>
+        </div>
+
+        <!-- Report Generator -->
+        <div id="report-generator" class="tool-panel" data-title="Pentest Report Generator" data-category="Report Generator">
+            <div class="tool-header">
+                <h2>Penetration Test Report Generator</h2>
+                <p class="tool-desc">Generate professional pentest reports with SEC ASSEM branding.</p>
+            </div>
+            <div class="tool-body">
+                <div class="report-section">
+                    <h3>Project Information</h3>
+                    <div class="input-row">
+                        <div class="input-group" style="flex:1">
+                            <label for="report-generator-client">Client Name</label>
+                            <input type="text" id="report-generator-client" placeholder="Acme Corporation">
+                        </div>
+                        <div class="input-group" style="flex:1">
+                            <label for="report-generator-project">Project Name</label>
+                            <input type="text" id="report-generator-project" placeholder="Web Application Pentest">
+                        </div>
+                    </div>
+                    <div class="input-row">
+                        <div class="input-group" style="flex:1">
+                            <label for="report-generator-tester">Tester Name</label>
+                            <input type="text" id="report-generator-tester" placeholder="Assem">
+                        </div>
+                        <div class="input-group" style="flex:1">
+                            <label for="report-generator-date-start">Start Date</label>
+                            <input type="date" id="report-generator-date-start">
+                        </div>
+                        <div class="input-group" style="flex:1">
+                            <label for="report-generator-date-end">End Date</label>
+                            <input type="date" id="report-generator-date-end">
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label for="report-generator-scope">Scope</label>
+                        <textarea id="report-generator-scope" rows="3" placeholder="Define the testing scope: URLs, IPs, applications..."></textarea>
+                    </div>
+                    <div class="input-group">
+                        <label for="report-generator-summary">Executive Summary</label>
+                        <textarea id="report-generator-summary" rows="4" placeholder="High-level summary of the engagement and findings..."></textarea>
+                    </div>
+                </div>
+
+                <div class="report-section">
+                    <div class="section-header-row">
+                        <h3>Findings</h3>
+                        <button class="btn-secondary btn-sm" onclick="SecAssem.tools.addFinding()">
+                            <span class="btn-icon">+</span> Add Finding
+                        </button>
+                    </div>
+                    <div id="report-generator-findings"></div>
+                </div>
+
+                <div class="btn-row">
+                    <button class="btn-primary" id="report-generator-btn" onclick="SecAssem.tools.generateReport()">
+                        <span class="btn-icon">📋</span> Generate Report
+                    </button>
+                    <button class="btn-secondary" onclick="SecAssem.tools.previewReport()">
+                        <span class="btn-icon">👁️</span> Preview Report
+                    </button>
+                </div>
+                <div id="report-generator-results" class="result-block"></div>
+            </div>
+        </div>
+
+        <!-- Reverse Shell Generator -->
+        <div id="revshell-generator" class="tool-panel" data-title="Reverse Shell Generator" data-category="Utility Tools">
+            <div class="tool-header">
+                <h2>Reverse Shell Generator</h2>
+                <p class="tool-desc">Generate reverse shell one-liners for various languages and platforms.</p>
+            </div>
+            <div class="tool-body">
+                <div class="input-row">
+                    <div class="input-group" style="flex:1">
+                        <label for="revshell-generator-ip">Your IP Address</label>
+                        <input type="text" id="revshell-generator-ip" placeholder="10.10.14.1">
+                    </div>
+                    <div class="input-group" style="flex:1">
+                        <label for="revshell-generator-port">Port</label>
+                        <input type="text" id="revshell-generator-port" placeholder="4444" value="4444">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label for="revshell-generator-type">Shell Type</label>
+                    <select id="revshell-generator-type">
+                        <option value="bash">Bash</option>
+                        <option value="python">Python</option>
+                        <option value="php">PHP</option>
+                        <option value="perl">Perl</option>
+                        <option value="ruby">Ruby</option>
+                        <option value="netcat">Netcat (nc)</option>
+                        <option value="powershell">PowerShell</option>
+                        <option value="java">Java</option>
+                        <option value="nodejs">Node.js</option>
+                        <option value="socat">Socat</option>
+                        <option value="lua">Lua</option>
+                        <option value="awk">AWK</option>
+                    </select>
+                </div>
+                <button class="btn-primary" id="revshell-generator-btn" onclick="SecAssem.tools.revshellGenerator()">
+                    <span class="btn-icon">⚡</span> Generate Shell
+                </button>
+                <div id="revshell-generator-results" class="result-block"></div>
+            </div>
+        </div>
+
+        <!-- Wordlist Generator -->
+        <div id="wordlist-generator" class="tool-panel" data-title="Wordlist Generator" data-category="Utility Tools">
+            <div class="tool-header">
+                <h2>Custom Wordlist Generator</h2>
+                <p class="tool-desc">Generate custom wordlists from base words with mutations and variations.</p>
+            </div>
+            <div class="tool-body">
+                <div class="input-group">
+                    <label for="wordlist-generator-words">Base Words (one per line)</label>
+                    <textarea id="wordlist-generator-words" rows="5" placeholder="admin&#10;password&#10;company&#10;2024"></textarea>
+                </div>
+                <div class="checkbox-row">
+                    <label class="checkbox-label"><input type="checkbox" id="wordlist-generator-numbers" checked> Append Numbers (0-999)</label>
+                    <label class="checkbox-label"><input type="checkbox" id="wordlist-generator-special" checked> Append Special Chars</label>
+                    <label class="checkbox-label"><input type="checkbox" id="wordlist-generator-leet"> Leet Speak</label>
+                    <label class="checkbox-label"><input type="checkbox" id="wordlist-generator-capitalize" checked> Capitalize Variations</label>
+                    <label class="checkbox-label"><input type="checkbox" id="wordlist-generator-years"> Append Years (2020-2026)</label>
+                    <label class="checkbox-label"><input type="checkbox" id="wordlist-generator-reverse"> Reverse</label>
+                    <label class="checkbox-label"><input type="checkbox" id="wordlist-generator-double"> Double</label>
+                </div>
+                <button class="btn-primary" id="wordlist-generator-btn" onclick="SecAssem.tools.wordlistGenerator()">
+                    <span class="btn-icon">📝</span> Generate Wordlist
+                </button>
+                <div id="wordlist-generator-results" class="result-block"></div>
+            </div>
+        </div>
+
+        <!-- Regex Tester -->
+        <div id="regex-tester" class="tool-panel" data-title="Regex Tester" data-category="Utility Tools">
+            <div class="tool-header">
+                <h2>Regex Tester</h2>
+                <p class="tool-desc">Test regular expressions in real-time with match highlighting.</p>
+            </div>
+            <div class="tool-body">
+                <div class="input-row">
+                    <div class="input-group" style="flex:2">
+                        <label for="regex-tester-pattern">Regex Pattern</label>
+                        <input type="text" id="regex-tester-pattern" placeholder="[a-zA-Z0-9]+@[a-zA-Z0-9]+\.[a-z]+" oninput="SecAssem.tools.regexTest()">
+                    </div>
+                    <div class="input-group" style="flex:1">
+                        <label>Flags</label>
+                        <div class="checkbox-row compact">
+                            <label class="checkbox-label"><input type="checkbox" id="regex-tester-g" checked onchange="SecAssem.tools.regexTest()"> g</label>
+                            <label class="checkbox-label"><input type="checkbox" id="regex-tester-i" onchange="SecAssem.tools.regexTest()"> i</label>
+                            <label class="checkbox-label"><input type="checkbox" id="regex-tester-m" onchange="SecAssem.tools.regexTest()"> m</label>
+                            <label class="checkbox-label"><input type="checkbox" id="regex-tester-s" onchange="SecAssem.tools.regexTest()"> s</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label for="regex-tester-text">Test String</label>
+                    <textarea id="regex-tester-text" rows="5" placeholder="Enter text to test against..." oninput="SecAssem.tools.regexTest()"></textarea>
+                </div>
+                <div id="regex-tester-results" class="result-block"></div>
+            </div>
+        </div>
+
+        <!-- Timestamp Converter -->
+        <div id="timestamp-converter" class="tool-panel" data-title="Timestamp Converter" data-category="Utility Tools">
+            <div class="tool-header">
+                <h2>Timestamp Converter</h2>
+                <p class="tool-desc">Convert between Unix timestamps and human-readable dates.</p>
+            </div>
+            <div class="tool-body">
+                <div class="input-row">
+                    <div class="input-group" style="flex:2">
+                        <label for="timestamp-converter-input">Unix Timestamp or Date String</label>
+                        <input type="text" id="timestamp-converter-input" placeholder="1700000000 or 2024-01-15T10:30:00Z">
+                    </div>
+                    <div class="input-group" style="flex:1;align-self:flex-end">
+                        <button class="btn-secondary btn-sm" onclick="SecAssem.tools.timestampNow()" style="width:100%">⏱️ Now</button>
+                    </div>
+                </div>
+                <button class="btn-primary" id="timestamp-converter-btn" onclick="SecAssem.tools.timestampConverter()">
+                    <span class="btn-icon">🔄</span> Convert
+                </button>
+                <div id="timestamp-converter-results" class="result-block"></div>
+            </div>
+        </div>
+
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>
