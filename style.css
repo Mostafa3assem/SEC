@@ -1352,6 +1352,105 @@ textarea:focus {
     left: 10px;
     right: 10px;
   }
+   /* ==========================================================================
+   SEC ASSEM v1.1 — Accessibility & Security UI Improvements
+   ========================================================================== */
+
+.sidebar {
+  transition: transform 0.25s ease;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+.nav-item:focus-visible,
+.nav-category-header:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 3px;
+}
+
+.code-block,
+.payload-item code,
+.data-table code,
+.hash-value {
+  word-break: normal;
+  overflow-wrap: anywhere;
+}
+
+.security-note,
+.browser-limit-card {
+  margin: 12px 0 16px;
+  padding: 12px 14px;
+  color: var(--text-secondary);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-left: 3px solid var(--accent-secondary);
+  border-radius: var(--radius-sm);
+  font-size: 0.84rem;
+  line-height: 1.6;
+}
+
+.browser-limit-card h4 {
+  margin-bottom: 8px;
+  color: var(--accent-secondary);
+}
+
+.jwt-status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin: 12px 0;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
+
+.report-preview-frame {
+  width: 100%;
+  height: min(72vh, 850px);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  background: #fff;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+button:disabled,
+input:disabled,
+select:disabled,
+textarea:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .modal-content {
+    max-height: 92vh;
+  }
+
+  .report-preview-frame {
+    height: 75vh;
+  }
+
+  .payload-list-header {
+    gap: 8px;
+  }
+}
 
   .toast { min-width: 0; width: 100%; }
 }
