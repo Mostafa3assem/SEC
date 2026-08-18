@@ -1,5 +1,6 @@
 export async function onRequestGet(context) {
     const requestUrl = new URL(context.request.url);
+
     const domain = (requestUrl.searchParams.get('domain') || '')
         .trim()
         .toLowerCase()
@@ -17,7 +18,8 @@ export async function onRequestGet(context) {
             {
                 status: 400,
                 headers: {
-                    'Cache-Control': 'no-store'
+                    'Cache-Control': 'no-store',
+                    'Content-Type': 'application/json; charset=utf-8'
                 }
             }
         );
@@ -30,31 +32,29 @@ export async function onRequestGet(context) {
         const response = await fetch(crtUrl, {
             method: 'GET',
             headers: {
-                'Accept': 'application/json',
+                'Accept': 'application/json,text/plain,*/*',
                 'User-Agent': 'SEC-ASSEM/1.1'
-            },
-            cf: {
-                cacheTtl: 300,
-                cacheEverything: true
             }
         });
+
+        const raw = await response.text();
 
         if (!response.ok) {
             return Response.json(
                 {
                     success: false,
-                    error: `crt.sh returned HTTP ${response.status}`
+                    error: `crt.sh returned HTTP ${response.status}`,
+                    upstreamPreview: raw.slice(0, 200)
                 },
                 {
                     status: 502,
                     headers: {
-                        'Cache-Control': 'no-store'
+                        'Cache-Control': 'no-store',
+                        'Content-Type': 'application/json; charset=utf-8'
                     }
                 }
             );
         }
-
-        const raw = await response.text();
 
         let certificates;
 
@@ -64,12 +64,14 @@ export async function onRequestGet(context) {
             return Response.json(
                 {
                     success: false,
-                    error: 'crt.sh returned invalid JSON'
+                    error: 'crt.sh did not return valid JSON',
+                    upstreamPreview: raw.slice(0, 200)
                 },
                 {
                     status: 502,
                     headers: {
-                        'Cache-Control': 'no-store'
+                        'Cache-Control': 'no-store',
+                        'Content-Type': 'application/json; charset=utf-8'
                     }
                 }
             );
@@ -82,7 +84,11 @@ export async function onRequestGet(context) {
                     error: 'Unexpected crt.sh response format'
                 },
                 {
-                    status: 502
+                    status: 502,
+                    headers: {
+                        'Cache-Control': 'no-store',
+                        'Content-Type': 'application/json; charset=utf-8'
+                    }
                 }
             );
         }
@@ -100,14 +106,8 @@ export async function onRequestGet(context) {
                     .replace(/^\*\./, '')
                     .replace(/\.$/, '');
 
-                if (!name) {
-                    continue;
-                }
+                if (!name) continue;
 
-                /*
-                 * Important:
-                 * fooexample.com must NOT match example.com.
-                 */
                 if (
                     name === domain ||
                     name.endsWith(`.${domain}`)
@@ -131,8 +131,8 @@ export async function onRequestGet(context) {
             {
                 status: 200,
                 headers: {
-                    'Cache-Control':
-                        'public, max-age=300, s-maxage=300',
+                    'Cache-Control': 'public, max-age=300',
+                    'Content-Type': 'application/json; charset=utf-8',
                     'X-Content-Type-Options': 'nosniff'
                 }
             }
@@ -141,12 +141,14 @@ export async function onRequestGet(context) {
         return Response.json(
             {
                 success: false,
-                error: 'Certificate Transparency lookup failed'
+                error: 'Certificate Transparency lookup failed',
+                details: error.message
             },
             {
                 status: 502,
                 headers: {
-                    'Cache-Control': 'no-store'
+                    'Cache-Control': 'no-store',
+                    'Content-Type': 'application/json; charset=utf-8'
                 }
             }
         );
