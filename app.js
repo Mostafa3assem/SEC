@@ -469,322 +469,487 @@ const SecAssem = {
             }
         },
 
-       /* ===== Subdomain Finder ===== */
-async subdomainFinder() {
-    const input = document.getElementById(
-        'subdomain-finder-domain'
-    );
+           /* ===== Subdomain Finder ===== */
+        async subdomainFinder() {
+            const input = document.getElementById('subdomain-finder-domain');
+            const results = document.getElementById('subdomain-finder-results');
 
-    const results = document.getElementById(
-        'subdomain-finder-results'
-    );
+            if (!input || !results) {
+                console.error(
+                    '[SEC ASSEM] Subdomain Finder: required HTML elements were not found.'
+                );
+                return;
+            }
 
-    const domain = (input?.value || '')
-        .trim()
-        .toLowerCase()
-        .replace(/\.$/, '');
+            const domain = (input.value || '')
+                .trim()
+                .toLowerCase()
+                .replace(/^https?:\/\//i, '')
+                .replace(/^www\./i, '')
+                .split('/')[0]
+                .replace(/\.$/, '');
 
-    if (!domain) {
-        SecAssem.showToast(
-            'Please enter a domain',
-            'warning'
-        );
-        return;
-    }
+            if (!domain) {
+                SecAssem.showToast(
+                    'Please enter a domain',
+                    'warning'
+                );
+                return;
+            }
 
-    const domainRegex =
-        /^(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/i;
+            const domainRegex =
+                /^(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/i;
 
-    if (!domainRegex.test(domain)) {
-        SecAssem.showToast(
-            'Please enter a valid domain',
-            'warning'
-        );
-        return;
-    }
+            if (!domainRegex.test(domain)) {
+                SecAssem.showToast(
+                    'Please enter a valid domain, e.g. example.com',
+                    'warning'
+                );
+                return;
+            }
 
-    SecAssem.showLoading(
-        'subdomain-finder-results'
-    );
+            SecAssem.showLoading(
+                'subdomain-finder-results'
+            );
 
-    try {
-        const controller = new AbortController();
+            try {
+                const controller = new AbortController();
 
-        const timeout = setTimeout(() => {
-            controller.abort();
-        }, 20000);
+                const timeout = setTimeout(() => {
+                    controller.abort();
+                }, 25000);
 
-        let response;
+                let response;
 
-        try {
-            response = await fetch(
-                `/api/ct?domain=${encodeURIComponent(domain)}`,
-                {
-                    method: 'GET',
-                    headers: {
-                        'Accept': 'application/json'
-                    },
-                    signal: controller.signal,
-                    cache: 'no-store'
+                try {
+                    response = await fetch(
+                        `/api/ct?domain=${encodeURIComponent(domain)}`,
+                        {
+                            method: 'GET',
+                            headers: {
+                                'Accept': 'application/json'
+                            },
+                            signal: controller.signal,
+                            cache: 'no-store'
+                        }
+                    );
+                } finally {
+                    clearTimeout(timeout);
                 }
-            );
-        } finally {
-            clearTimeout(timeout);
-        }
 
-        let data;
+                /*
+                 * IMPORTANT:
+                 * Do NOT use response.json() here.
+                 *
+                 * The API/proxy may sometimes return HTML or plain text.
+                 * Reading it as text first allows us to see the real
+                 * server response instead of getting:
+                 *
+                 * Unexpected token 'O' ... is not valid JSON
+                 */
 
-        try {
-            data = await response.json();
-        } catch {
-            throw new Error(
-                `Invalid response from CT service (HTTP ${response.status})`
-            );
-        }
+                const raw = await response.text();
 
-        if (!response.ok) {
-            throw new Error(
-                data.error ||
-                `CT service returned HTTP ${response.status}`
-            );
-        }
-
-        if (
-            !data.success ||
-            !Array.isArray(data.subdomains)
-        ) {
-            throw new Error(
-                'Unexpected CT service response'
-            );
-        }
-
-        const subdomains = data.subdomains
-            .map(name =>
-                String(name)
-                    .trim()
-                    .toLowerCase()
-                    .replace(/^\*\./, '')
-                    .replace(/\.$/, '')
-            )
-            .filter(Boolean);
-
-        const unique = [
-            ...new Set(subdomains)
-        ].sort((a, b) =>
-            a.localeCompare(b)
-        );
-
-        results.replaceChildren();
-
-        const header =
-            document.createElement('div');
-
-        header.className =
-            'result-header';
-
-        const heading =
-            document.createElement('h4');
-
-        heading.textContent =
-            `Subdomains Found: ${unique.length}`;
-
-        const actions =
-            document.createElement('div');
-
-        actions.className =
-            'btn-row';
-
-        const copyButton =
-            document.createElement('button');
-
-        copyButton.type = 'button';
-        copyButton.className =
-            'btn-secondary btn-sm';
-        copyButton.textContent =
-            '📋 Copy All';
-
-        copyButton.addEventListener(
-            'click',
-            () => {
-                SecAssem.copyToClipboard(
-                    unique.join('\n')
+                console.log(
+                    '[SEC ASSEM] CT API HTTP Status:',
+                    response.status
                 );
-            }
-        );
 
-        const exportButton =
-            document.createElement('button');
-
-        exportButton.type = 'button';
-        exportButton.className =
-            'btn-secondary btn-sm';
-        exportButton.textContent =
-            '⬇ Export';
-
-        exportButton.addEventListener(
-            'click',
-            () => {
-                SecAssem.downloadFile(
-                    `subdomains_${domain}.txt`,
-                    unique.join('\n'),
-                    'text/plain;charset=utf-8'
+                console.log(
+                    '[SEC ASSEM] CT API Content-Type:',
+                    response.headers.get('content-type')
                 );
-            }
-        );
 
-        actions.append(
-            copyButton,
-            exportButton
-        );
+                console.log(
+                    '[SEC ASSEM] CT API Raw Response:',
+                    raw
+                );
 
-        header.append(
-            heading,
-            actions
-        );
-
-        results.appendChild(header);
-
-        if (!unique.length) {
-            const empty =
-                document.createElement('p');
-
-            empty.className =
-                'no-results';
-
-            empty.textContent =
-                `No Certificate Transparency subdomains were found for ${domain}.`;
-
-            results.appendChild(empty);
-
-            SecAssem.showToast(
-                'No subdomains found in Certificate Transparency logs',
-                'info'
-            );
-
-            return;
-        }
-
-        const list =
-            document.createElement('div');
-
-        list.className =
-            'payload-list';
-
-        unique.forEach(subdomain => {
-            const row =
-                document.createElement('div');
-
-            row.className =
-                'payload-item';
-
-            const code =
-                document.createElement('code');
-
-            code.textContent =
-                subdomain;
-
-            const copy =
-                document.createElement('button');
-
-            copy.type = 'button';
-            copy.className =
-                'copy-btn';
-
-            copy.textContent =
-                '📋';
-
-            copy.title =
-                `Copy ${subdomain}`;
-
-            copy.setAttribute(
-                'aria-label',
-                `Copy ${subdomain}`
-            );
-
-            copy.addEventListener(
-                'click',
-                () => {
-                    SecAssem.copyToClipboard(
-                        subdomain
+                if (!raw || !raw.trim()) {
+                    throw new Error(
+                        `CT API returned an empty response (HTTP ${response.status})`
                     );
                 }
-            );
 
-            row.append(
-                code,
-                copy
-            );
+                let data;
 
-            list.appendChild(row);
-        });
+                try {
+                    data = JSON.parse(raw);
+                } catch (parseError) {
+                    const preview = raw
+                        .replace(/\s+/g, ' ')
+                        .trim()
+                        .slice(0, 300);
 
-        results.appendChild(list);
+                    throw new Error(
+                        `API returned non-JSON response (HTTP ${response.status}): ${preview}`
+                    );
+                }
 
-        SecAssem.showToast(
-            `Found ${unique.length} unique subdomains`,
-            'success'
-        );
-    } catch (error) {
-        results.replaceChildren();
+                if (!response.ok) {
+                    throw new Error(
+                        data?.error ||
+                        data?.message ||
+                        `CT service returned HTTP ${response.status}`
+                    );
+                }
 
-        const box =
-            document.createElement('div');
+                /*
+                 * Expected API format:
+                 *
+                 * {
+                 *     success: true,
+                 *     subdomains: [...]
+                 * }
+                 */
 
-        box.className =
-            'browser-limit-card';
+                if (!data || typeof data !== 'object') {
+                    throw new Error(
+                        'CT API returned an invalid response object'
+                    );
+                }
 
-        const heading =
-            document.createElement('h4');
+                if (data.success === false) {
+                    throw new Error(
+                        data.error ||
+                        data.message ||
+                        'Certificate Transparency API reported a failure'
+                    );
+                }
 
-        heading.textContent =
-            'Subdomain lookup failed';
+                let returnedSubdomains = null;
 
-        const message =
-            document.createElement('p');
+                /*
+                 * Main expected format.
+                 */
+                if (Array.isArray(data.subdomains)) {
+                    returnedSubdomains = data.subdomains;
+                }
 
-        if (error.name === 'AbortError') {
-            message.textContent =
-                'Certificate Transparency lookup timed out after 20 seconds.';
-        } else {
-            message.textContent =
-                error.message ||
-                'Unable to query Certificate Transparency logs.';
-        }
+                /*
+                 * Optional compatibility:
+                 * If the API itself returns an array.
+                 */
+                if (!returnedSubdomains && Array.isArray(data)) {
+                    returnedSubdomains = data;
+                }
 
-        const direct =
-            document.createElement('a');
+                /*
+                 * Optional compatibility:
+                 * {
+                 *   data: [...]
+                 * }
+                 */
+                if (
+                    !returnedSubdomains &&
+                    Array.isArray(data.data)
+                ) {
+                    returnedSubdomains = data.data;
+                }
 
-        direct.href =
-            `https://crt.sh/?q=%25.${encodeURIComponent(domain)}`;
+                if (!returnedSubdomains) {
+                    console.error(
+                        '[SEC ASSEM] Unexpected CT response:',
+                        data
+                    );
 
-        direct.target =
-            '_blank';
+                    throw new Error(
+                        'Unexpected CT service response: subdomains array was not found'
+                    );
+                }
 
-        direct.rel =
-            'noopener noreferrer';
+                const normalized = [];
 
-        direct.textContent =
-            'Open crt.sh directly →';
+                returnedSubdomains.forEach(item => {
+                    /*
+                     * Normal API:
+                     * ["api.example.com", ...]
+                     */
+                    if (typeof item === 'string') {
+                        normalized.push(item);
+                        return;
+                    }
 
-        box.append(
-            heading,
-            message,
-            direct
-        );
+                    /*
+                     * Compatibility with raw crt.sh-like objects.
+                     */
+                    if (item && typeof item === 'object') {
+                        if (typeof item.name_value === 'string') {
+                            item.name_value
+                                .split(/\r?\n/)
+                                .forEach(name => {
+                                    normalized.push(name);
+                                });
 
-        results.appendChild(box);
+                            return;
+                        }
 
-        SecAssem.showToast(
-            'Subdomain lookup failed',
-            'error'
-        );
+                        if (typeof item.common_name === 'string') {
+                            normalized.push(
+                                item.common_name
+                            );
 
-        console.error(
-            '[SEC ASSEM] Subdomain Finder:',
-            error
-        );
-    }
-}
+                            return;
+                        }
+
+                        if (typeof item.name === 'string') {
+                            normalized.push(
+                                item.name
+                            );
+                        }
+                    }
+                });
+
+                const subdomains = normalized
+                    .map(name =>
+                        String(name)
+                            .trim()
+                            .toLowerCase()
+                            .replace(/^\*\./, '')
+                            .replace(/\.$/, '')
+                    )
+                    .filter(Boolean)
+                    .filter(name =>
+                        name === domain ||
+                        name.endsWith(`.${domain}`)
+                    );
+
+                const unique = [
+                    ...new Set(subdomains)
+                ].sort((a, b) =>
+                    a.localeCompare(b)
+                );
+
+                results.replaceChildren();
+
+                const header =
+                    document.createElement('div');
+
+                header.className =
+                    'result-header';
+
+                const heading =
+                    document.createElement('h4');
+
+                heading.textContent =
+                    `Subdomains Found: ${unique.length}`;
+
+                const actions =
+                    document.createElement('div');
+
+                actions.className =
+                    'btn-row';
+
+                const copyButton =
+                    document.createElement('button');
+
+                copyButton.type =
+                    'button';
+
+                copyButton.className =
+                    'btn-secondary btn-sm';
+
+                copyButton.textContent =
+                    '📋 Copy All';
+
+                copyButton.addEventListener(
+                    'click',
+                    () => {
+                        SecAssem.copyToClipboard(
+                            unique.join('\n')
+                        );
+                    }
+                );
+
+                const exportButton =
+                    document.createElement('button');
+
+                exportButton.type =
+                    'button';
+
+                exportButton.className =
+                    'btn-secondary btn-sm';
+
+                exportButton.textContent =
+                    '⬇ Export';
+
+                exportButton.addEventListener(
+                    'click',
+                    () => {
+                        SecAssem.downloadFile(
+                            `subdomains_${domain}.txt`,
+                            unique.join('\n'),
+                            'text/plain;charset=utf-8'
+                        );
+                    }
+                );
+
+                actions.append(
+                    copyButton,
+                    exportButton
+                );
+
+                header.append(
+                    heading,
+                    actions
+                );
+
+                results.appendChild(
+                    header
+                );
+
+                if (!unique.length) {
+                    const empty =
+                        document.createElement('p');
+
+                    empty.className =
+                        'no-results';
+
+                    empty.textContent =
+                        `No Certificate Transparency subdomains were found for ${domain}.`;
+
+                    results.appendChild(
+                        empty
+                    );
+
+                    SecAssem.showToast(
+                        'No subdomains found in Certificate Transparency logs',
+                        'info'
+                    );
+
+                    return;
+                }
+
+                const list =
+                    document.createElement('div');
+
+                list.className =
+                    'payload-list';
+
+                unique.forEach(subdomain => {
+                    const row =
+                        document.createElement('div');
+
+                    row.className =
+                        'payload-item';
+
+                    const code =
+                        document.createElement('code');
+
+                    code.textContent =
+                        subdomain;
+
+                    const copy =
+                        document.createElement('button');
+
+                    copy.type =
+                        'button';
+
+                    copy.className =
+                        'copy-btn';
+
+                    copy.textContent =
+                        '📋';
+
+                    copy.title =
+                        `Copy ${subdomain}`;
+
+                    copy.setAttribute(
+                        'aria-label',
+                        `Copy ${subdomain}`
+                    );
+
+                    copy.addEventListener(
+                        'click',
+                        () => {
+                            SecAssem.copyToClipboard(
+                                subdomain
+                            );
+                        }
+                    );
+
+                    row.append(
+                        code,
+                        copy
+                    );
+
+                    list.appendChild(
+                        row
+                    );
+                });
+
+                results.appendChild(
+                    list
+                );
+
+                SecAssem.showToast(
+                    `Found ${unique.length} unique subdomains`,
+                    'success'
+                );
+
+            } catch (error) {
+                results.replaceChildren();
+
+                const box =
+                    document.createElement('div');
+
+                box.className =
+                    'browser-limit-card';
+
+                const heading =
+                    document.createElement('h4');
+
+                heading.textContent =
+                    'Subdomain lookup failed';
+
+                const message =
+                    document.createElement('p');
+
+                if (error.name === 'AbortError') {
+                    message.textContent =
+                        'Certificate Transparency lookup timed out after 25 seconds.';
+                } else {
+                    message.textContent =
+                        error.message ||
+                        'Unable to query Certificate Transparency logs.';
+                }
+
+                const direct =
+                    document.createElement('a');
+
+                direct.href =
+                    `https://crt.sh/?q=%25.${encodeURIComponent(domain)}`;
+
+                direct.target =
+                    '_blank';
+
+                direct.rel =
+                    'noopener noreferrer';
+
+                direct.textContent =
+                    'Open crt.sh directly →';
+
+                box.append(
+                    heading,
+                    message,
+                    direct
+                );
+
+                results.appendChild(
+                    box
+                );
+
+                SecAssem.showToast(
+                    'Subdomain lookup failed',
+                    'error'
+                );
+
+                console.error(
+                    '[SEC ASSEM] Subdomain Finder:',
+                    error
+                );
+            }
+        },
         /* ===== Port Scanner Reference ===== */
         portScanner() {
             const ports = [
